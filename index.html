@@ -91,11 +91,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 .msg-hd{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .msg-hd-title{font-size:14px;font-weight:500;color:var(--text);}
 .msg-close{font-size:20px;color:var(--text3);cursor:pointer;padding:0 2px;}
-.msg-list{padding:10px 14px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
-.bubble{padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.6;max-width:85%;}
-.bubble.in{background:var(--bg);color:var(--text);align-self:flex-start;}
-.bubble.out{background:var(--green-light);color:var(--green-text);align-self:flex-end;}
-.bubble-meta{font-size:10px;color:var(--text3);margin-top:3px;}
+.msg-list{padding:10px 14px;display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto;}
+.msg-entry{padding:9px 12px;border-radius:var(--radius-sm);background:var(--bg);border-left:3px solid var(--green);font-size:13px;color:var(--text);line-height:1.6;}
+.msg-meta{font-size:10px;color:var(--text3);margin-top:3px;}
 .msg-input-row{display:flex;gap:8px;padding:10px 14px;border-top:0.5px solid var(--border);}
 .msg-input{flex:1;font-size:14px;padding:9px 12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--card);color:var(--text);outline:none;}
 .msg-input:focus{border-color:var(--green);}
@@ -258,30 +256,21 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 </div>
 
 <!-- FAB -->
-<div class="fab" onclick="toggleMsg()" id="fab">
-  <div class="fab-icon">✉</div>
-  <div class="fab-badge" id="fab-badge">1</div>
+<div class="fab" onclick="toggleMemo()" id="fab">
+  <div class="fab-icon">📝</div>
+  <div class="fab-badge" id="fab-badge" style="display:none"></div>
 </div>
 
-<!-- Message panel -->
+<!-- Memo panel -->
 <div class="msg-wrap" id="msg-wrap">
   <div class="msg-hd">
-    <div class="msg-hd-title">連絡</div>
-    <span class="msg-close" onclick="toggleMsg()">×</span>
+    <div class="msg-hd-title">📝 メモ</div>
+    <span class="msg-close" onclick="toggleMemo()">×</span>
   </div>
-  <div class="msg-list" id="msg-list">
-    <div>
-      <div class="bubble in">部員説明会の日程ですが、6月15日の放課後でいかがでしょうか？</div>
-      <div class="bubble-meta" style="padding-left:2px;">顧問 田中先生 · 6/1</div>
-    </div>
-    <div style="display:flex;flex-direction:column;align-items:flex-end;">
-      <div class="bubble out">承知しました。15時でよろしいでしょうか。</div>
-      <div class="bubble-meta">保﨑 · 6/2</div>
-    </div>
-  </div>
+  <div class="msg-list" id="memo-list"></div>
   <div class="msg-input-row">
-    <input class="msg-input" id="msg-inp" placeholder="メッセージを入力…" type="text" onkeydown="if(event.key==='Enter')sendMsg()">
-    <button class="msg-send" onclick="sendMsg()">↑</button>
+    <input class="msg-input" id="memo-inp" placeholder="メモを入力…" type="text" onkeydown="if(event.key==='Enter')addMemo()">
+    <button class="msg-send" onclick="addMemo()">追加</button>
   </div>
 </div>
 
@@ -413,29 +402,60 @@ function sw(n){
   document.getElementById('t1').className='tab'+(n===1?' on':'');
 }
 
-function toggleMsg(){
-  const w = document.getElementById('msg-wrap');
-  const b = document.getElementById('fab-badge');
-  const showing = w.classList.toggle('show');
-  if(showing) b.style.display='none';
+// メモ機能
+const MEMO_KEY = 'marc_launch_memos';
+
+function toggleMemo(){
+  document.getElementById('msg-wrap').classList.toggle('show');
 }
 
-function sendMsg(){
-  const inp = document.getElementById('msg-inp');
+function addMemo(){
+  const inp = document.getElementById('memo-inp');
   const txt = inp.value.trim();
   if(!txt) return;
-  const list = document.getElementById('msg-list');
-  const d = document.createElement('div');
-  d.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;';
+  const memos = getMemos();
   const now = new Date();
-  const time = (now.getMonth()+1)+'/'+now.getDate();
-  d.innerHTML = '<div class="bubble out">'+escHtml(txt)+'</div><div class="bubble-meta">保﨑 · '+time+'</div>';
-  list.appendChild(d);
-  inp.value = '';
-  list.scrollTop = list.scrollHeight;
-  // GAS送信（実装後に有効化）
-  // if(GAS_URL) postToGas({type:'message',text:txt});
+  const ts = now.getFullYear()+'/'+(now.getMonth()+1)+'/'+now.getDate()+' '+now.getHours()+':'+String(now.getMinutes()).padStart(2,'0');
+  memos.unshift({text:txt, ts:ts, id:Date.now()});
+  saveMemos(memos);
+  renderMemos();
+  inp.value='';
 }
+
+function deleteMemo(id){
+  const memos = getMemos().filter(m=>m.id!==id);
+  saveMemos(memos);
+  renderMemos();
+}
+
+function getMemos(){
+  try { return JSON.parse(localStorage.getItem(MEMO_KEY)||'[]'); } catch(e){ return []; }
+}
+
+function saveMemos(memos){
+  try { localStorage.setItem(MEMO_KEY, JSON.stringify(memos)); } catch(e){}
+}
+
+function renderMemos(){
+  const list = document.getElementById('memo-list');
+  if(!list) return;
+  const memos = getMemos();
+  if(!memos.length){
+    list.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3);">メモはありません</div>';
+    return;
+  }
+  list.innerHTML = memos.map(m=>
+    '<div style="padding:8px 10px;border-bottom:0.5px solid var(--border);">'+
+    '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;">'+
+    '<div class="msg-entry" style="flex:1;margin:0;">'+escHtml(m.text)+'</div>'+
+    '<span onclick="deleteMemo('+m.id+')" style="font-size:14px;color:var(--text3);cursor:pointer;flex-shrink:0;padding:2px 4px;">✕</span>'+
+    '</div>'+
+    '<div class="msg-meta">'+escHtml(m.ts)+'</div>'+
+    '</div>'
+  ).join('');
+}
+
+document.addEventListener('DOMContentLoaded', function(){ renderMemos(); });
 
 function openSheet(title, html){
   document.getElementById('sh-title').textContent = title;
