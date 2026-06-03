@@ -249,7 +249,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
         <div class="pl-title">指導ポリシー・運用ルール</div>
         <button class="pl-add" onclick="openPolicy()">＋ 追加</button>
       </div>
-      <div id="pl-hint" class="pl-hint">「追加」から自由に入力できます。</div>
+      <div id="pl-hint" class="pl-hint">「追加」でタイトルとGoogleドライブのURLを登録できます。</div>
       <div id="pl-list"></div>
     </div>
   </div>
@@ -542,9 +542,11 @@ function viewText(key, label){
 }
 
 function openPolicy(){
-  openSheet('指導ポリシー・運用ルールを追加',
-    '<div class="s-label">内容</div>'+
-    '<textarea class="s-textarea" id="sv" placeholder="自由に入力してください…"></textarea>'+
+  openSheet('ファイルを追加',
+    '<div class="s-label">タイトル</div>'+
+    '<input class="s-input" id="sv-title" type="text" placeholder="例：指導ポリシー2025">'+
+    '<div class="s-label">GoogleドライブのURL</div>'+
+    '<input class="s-input" id="sv-url" type="text" placeholder="https://drive.google.com/...">'+
     '<div class="s-btns">'+
     '<button class="s-cancel" onclick="closeSheet()">キャンセル</button>'+
     '<button class="s-ok" onclick="savePolicy()">追加</button>'+
@@ -553,9 +555,10 @@ function openPolicy(){
 }
 
 function savePolicy(){
-  const val = document.getElementById('sv').value.trim();
-  if(!val){ closeSheet(); return; }
-  D.policies.push(val);
+  const title = document.getElementById('sv-title').value.trim();
+  const url   = document.getElementById('sv-url').value.trim();
+  if(!title || !url){ closeSheet(); return; }
+  D.policies.push({title:title, url:url});
   renderPolicies(); lsSave(); closeSheet();
   saveToGas('policies', {policies:D.policies});
 }
@@ -572,10 +575,20 @@ function renderPolicies(){
   const hint = document.getElementById('pl-hint');
   if(!D.policies.length){ hint.style.display='block'; list.innerHTML=''; return; }
   hint.style.display = 'none';
-  list.innerHTML = D.policies.map((p,i)=>
-    '<div class="pl-row"><span>'+escHtml(p)+'</span>'+
-    '<span class="pl-del" onclick="deletePolicy('+i+')">✕</span></div>'
-  ).join('');
+  list.innerHTML = D.policies.map((p,i)=>{
+    const title = typeof p === 'string' ? p : (p.title || '');
+    const url   = typeof p === 'string' ? '' : (p.url || '');
+    return '<div class="pl-row">'+
+      '<div style="flex:1;min-width:0;">'+
+        '<div style="font-size:13px;font-weight:500;color:var(--text);">'+escHtml(title)+'</div>'+
+        (url ? '<div style="font-size:11px;color:var(--text3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(url)+'</div>' : '')+
+      '</div>'+
+      '<div style="display:flex;gap:6px;flex-shrink:0;align-items:center;">'+
+        (url ? '<button class="btn btn-blue" style="font-size:11px;padding:4px 10px;" onclick="window.open(\''+escHtml(url)+'\',\'_blank\')">閲覧</button>' : '')+
+        '<span class="pl-del" onclick="deletePolicy('+i+')">✕</span>'+
+      '</div>'+
+    '</div>';
+  }).join('');
 }
 
 function updateProg(){
