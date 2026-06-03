@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>MARCプログラム 立ち上げ管理</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --green:#1D9E75;--green-light:#E1F5EE;--green-dark:#0F6E56;--green-text:#085041;
+  --blue:#185FA5;--blue-light:#E6F1FB;
+  --red:#E24B4A;
+  --bg:#F5F5F3;--card:#fff;
+  --border:#E0DED8;--border2:#C8C6C0;
+  --text:#1A1A18;--text2:#6B6B68;--text3:#9B9B98;
+  --radius:12px;--radius-sm:8px;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+/* Header */
+.header{background:var(--card);border-bottom:0.5px solid var(--border);padding:14px 16px 0;position:sticky;top:0;z-index:5;}
+.header-sub{font-size:12px;color:var(--text3);margin-bottom:2px;}
+.header-title{font-size:18px;font-weight:600;color:var(--text);margin-bottom:10px;}
+.tabs{display:flex;gap:0;}
+.tab{flex:1;text-align:center;padding:10px 4px;font-size:14px;color:var(--text3);border-bottom:2px solid transparent;cursor:pointer;transition:all .15s;}
+.tab.on{color:var(--green);border-bottom-color:var(--green);font-weight:500;}
+
+/* Screens */
+.screen{display:none;padding-bottom:80px;}
+.screen.on{display:block;}
+
+/* Progress */
+.prog-wrap{padding:14px 16px 8px;}
+.prog-track{height:5px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:5px;}
+.prog-fill{height:100%;background:var(--green);border-radius:3px;transition:width .4s cubic-bezier(.4,0,.2,1);}
+.prog-label{font-size:12px;color:var(--text3);}
+
+/* Sections */
+.sec{padding:8px 16px 0;}
+.sec-label{font-size:11px;color:var(--text3);letter-spacing:.06em;margin-bottom:7px;font-weight:500;}
+.card{background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);margin-bottom:10px;overflow:hidden;}
+.row{display:flex;align-items:center;gap:10px;padding:14px;border-bottom:0.5px solid var(--border);}
+.row:last-child{border-bottom:none;}
+
+/* Checkbox */
+.ck{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.ck.on{background:var(--green);border-color:var(--green);}
+.ck.on::after{content:"✓";color:#fff;font-size:13px;font-weight:600;}
+
+/* Item text */
+.ii{flex:1;min-width:0;}
+.it{font-size:14px;color:var(--text);line-height:1.4;}
+.it.done{color:var(--text3);}
+.is{font-size:12px;color:var(--text3);margin-top:3px;}
+.ia{flex-shrink:0;}
+
+/* Buttons */
+.btn{font-size:12px;border:none;border-radius:var(--radius-sm);padding:7px 12px;cursor:pointer;white-space:nowrap;font-weight:500;transition:opacity .15s;}
+.btn:active{opacity:.7;}
+.btn-blue{color:var(--blue);background:var(--blue-light);}
+.btn-green{color:var(--green-dark);background:var(--green-light);}
+.btn-gray{color:var(--text2);background:var(--bg);border:0.5px solid var(--border);}
+.done-badge{font-size:12px;color:var(--green);font-weight:600;}
+
+/* Tab2 */
+.t2{padding:14px 16px;}
+.big-btn{display:flex;align-items:center;gap:12px;background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;margin-bottom:12px;cursor:pointer;text-decoration:none;}
+.big-btn:active{opacity:.7;}
+.b-icon{width:42px;height:42px;border-radius:10px;background:var(--green-light);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;}
+.b-title{font-size:15px;font-weight:500;color:var(--text);}
+.b-sub{font-size:12px;color:var(--text3);margin-top:2px;}
+.b-arrow{font-size:18px;color:var(--text3);margin-left:auto;}
+.pl-card{background:var(--card);border:0.5px solid var(--border);border-radius:var(--radius);padding:16px;}
+.pl-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.pl-title{font-size:14px;font-weight:500;color:var(--text);}
+.pl-add{font-size:12px;color:var(--blue);background:var(--blue-light);border:none;border-radius:var(--radius-sm);padding:6px 12px;cursor:pointer;font-weight:500;}
+.pl-hint{font-size:13px;color:var(--text3);}
+.pl-row{display:flex;align-items:flex-start;justify-content:space-between;gap:8px;font-size:13px;color:var(--text2);padding:10px 0;border-bottom:0.5px solid var(--border);line-height:1.6;}
+.pl-row:last-child{border-bottom:none;}
+.pl-del{color:var(--text3);cursor:pointer;flex-shrink:0;font-size:16px;padding:0 2px;}
+
+/* FAB */
+.fab{position:fixed;bottom:24px;right:20px;width:52px;height:52px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);z-index:6;transition:transform .15s;}
+.fab:active{transform:scale(.94);}
+.fab-icon{font-size:22px;color:#fff;}
+.fab-badge{position:absolute;top:-3px;right:-3px;width:18px;height:18px;background:var(--red);border-radius:50%;font-size:10px;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;border:2px solid var(--bg);}
+
+/* Msg panel */
+.msg-wrap{position:fixed;bottom:88px;right:16px;width:calc(100vw - 32px);max-width:360px;background:var(--card);border-radius:var(--radius);border:0.5px solid var(--border);box-shadow:0 4px 16px rgba(0,0,0,.12);z-index:6;overflow:hidden;display:none;}
+.msg-wrap.show{display:block;}
+.msg-hd{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.msg-hd-title{font-size:14px;font-weight:500;color:var(--text);}
+.msg-close{font-size:20px;color:var(--text3);cursor:pointer;padding:0 2px;}
+.msg-list{padding:10px 14px;display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
+.bubble{padding:9px 12px;border-radius:10px;font-size:13px;line-height:1.6;max-width:85%;}
+.bubble.in{background:var(--bg);color:var(--text);align-self:flex-start;}
+.bubble.out{background:var(--green-light);color:var(--green-text);align-self:flex-end;}
+.bubble-meta{font-size:10px;color:var(--text3);margin-top:3px;}
+.msg-input-row{display:flex;gap:8px;padding:10px 14px;border-top:0.5px solid var(--border);}
+.msg-input{flex:1;font-size:14px;padding:9px 12px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--card);color:var(--text);outline:none;}
+.msg-input:focus{border-color:var(--green);}
+.msg-send{background:var(--green);border:none;border-radius:var(--radius-sm);padding:9px 14px;cursor:pointer;color:#fff;font-size:16px;}
+
+/* Bottom Sheet */
+.scrim{position:fixed;inset:0;background:rgba(0,0,0,0);transition:background .25s;pointer-events:none;z-index:20;}
+.scrim.show{background:rgba(0,0,0,.4);pointer-events:auto;}
+.sheet{position:fixed;bottom:0;left:0;right:0;background:var(--card);border-radius:18px 18px 0 0;transform:translateY(100%);transition:transform .3s cubic-bezier(.4,0,.2,1);z-index:21;max-height:88vh;display:flex;flex-direction:column;}
+.sheet.show{transform:translateY(0);}
+.sheet-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:12px auto 0;flex-shrink:0;}
+.sheet-hd{padding:16px 20px 12px;border-bottom:0.5px solid var(--border);flex-shrink:0;}
+.sheet-title{font-size:16px;font-weight:600;color:var(--text);}
+.sheet-body{padding:16px 20px;overflow-y:auto;flex:1;}
+.s-label{font-size:12px;color:var(--text3);margin-bottom:8px;font-weight:500;}
+.s-input{width:100%;font-size:15px;padding:12px 14px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--card);color:var(--text);margin-bottom:16px;outline:none;}
+.s-input:focus{border-color:var(--green);}
+.s-textarea{width:100%;font-size:15px;padding:12px 14px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:var(--card);color:var(--text);resize:none;min-height:120px;margin-bottom:16px;outline:none;line-height:1.6;}
+.s-textarea:focus{border-color:var(--green);}
+.s-btns{display:flex;gap:10px;padding-bottom:8px;}
+.s-cancel{flex:1;font-size:15px;padding:13px;border:0.5px solid var(--border2);border-radius:var(--radius-sm);background:transparent;color:var(--text2);cursor:pointer;font-weight:500;}
+.s-ok{flex:1;font-size:15px;padding:13px;border:none;border-radius:var(--radius-sm);background:var(--green);color:#fff;cursor:pointer;font-weight:600;}
+.view-text{font-size:14px;color:var(--text2);line-height:1.8;white-space:pre-wrap;margin-bottom:16px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-sub">MARCプログラム</div>
+  <div class="header-title" id="school-name">佐賀学園 剣道部</div>
+  <div class="tabs">
+    <div class="tab on" onclick="sw(0)" id="t0">立ち上げ</div>
+    <div class="tab" onclick="sw(1)" id="t1">顧問</div>
+  </div>
+</div>
+
+<!-- Tab 0: 立ち上げ -->
+<div class="screen on" id="s0">
+  <div class="prog-wrap">
+    <div class="prog-track"><div class="prog-fill" id="pbar" style="width:25%"></div></div>
+    <div class="prog-label" id="ptext">2 / 8 完了</div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">契約・合意</div>
+    <div class="card">
+      <div class="row">
+        <div class="ck on"></div>
+        <div class="ii"><div class="it done">覚書締結</div></div>
+        <div class="ia"><button class="btn btn-blue" onclick="openDrive('DRIVE_URL_MEMORANDUM')">閲覧</button></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">事前準備</div>
+    <div class="card">
+      <div class="row">
+        <div class="ck on"></div>
+        <div class="ii"><div class="it done">名簿データ格納</div></div>
+        <div class="ia"><button class="btn btn-blue" onclick="openDrive('DRIVE_URL_ROSTER')">閲覧</button></div>
+      </div>
+      <div class="row">
+        <div class="ck" id="ck-ai"></div>
+        <div class="ii">
+          <div class="it" id="tl-ai">AI初期登録</div>
+          <div class="is" id="sb-ai"></div>
+        </div>
+        <div class="ia" id="ac-ai">
+          <button class="btn btn-gray" onclick="openDate('ai','AI初期登録')">日程入力</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">説明会</div>
+    <div class="card">
+      <div class="row">
+        <div class="ck" id="ck-mgr"></div>
+        <div class="ii">
+          <div class="it" id="tl-mgr">管理者説明会</div>
+          <div class="is" id="sb-mgr"></div>
+        </div>
+        <div class="ia" id="ac-mgr">
+          <button class="btn btn-gray" onclick="openDate('mgr','管理者説明会')">日程入力</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="ck" id="ck-exp"></div>
+        <div class="ii">
+          <div class="it" id="tl-exp">部員説明会</div>
+          <div class="is" id="sb-exp">QR配布を含む</div>
+        </div>
+        <div class="ia" id="ac-exp">
+          <button class="btn btn-gray" onclick="openDate('exp','部員説明会')">日程入力</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">運用設計</div>
+    <div class="card">
+      <div class="row">
+        <div class="ck" id="ck-disc"></div>
+        <div class="ii"><div class="it" id="tl-disc">部員対話活動</div></div>
+        <div class="ia" id="ac-disc">
+          <button class="btn btn-gray" onclick="openText('disc','部員対話活動')">入力</button>
+        </div>
+      </div>
+      <div class="row">
+        <div class="ck" id="ck-rule"></div>
+        <div class="ii"><div class="it" id="tl-rule">運用ルール</div></div>
+        <div class="ia" id="ac-rule">
+          <button class="btn btn-gray" onclick="openText('rule','運用ルール')">入力</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sec">
+    <div class="sec-label">アンケート</div>
+    <div class="card">
+      <div class="row">
+        <div class="ck" id="ck-survey"></div>
+        <div class="ii">
+          <div class="it">事前アンケート回答</div>
+          <div class="is">顧問 / 部員説明会後</div>
+        </div>
+        <div class="ia">
+          <button class="btn btn-blue" onclick="openSurvey()">回答</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tab 1: 顧問 -->
+<div class="screen" id="s1">
+  <div class="t2">
+    <a class="big-btn" href="MARC_DASHBOARD_URL" target="_blank">
+      <div class="b-icon">📊</div>
+      <div>
+        <div class="b-title">MARCダッシュボードへ</div>
+        <div class="b-sub">部員の目標・振り返りを確認</div>
+      </div>
+      <div class="b-arrow">›</div>
+    </a>
+
+    <div class="pl-card">
+      <div class="pl-hd">
+        <div class="pl-title">指導ポリシー・運用ルール</div>
+        <button class="pl-add" onclick="openPolicy()">＋ 追加</button>
+      </div>
+      <div id="pl-hint" class="pl-hint">「追加」から自由に入力できます。</div>
+      <div id="pl-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FAB -->
+<div class="fab" onclick="toggleMsg()" id="fab">
+  <div class="fab-icon">✉</div>
+  <div class="fab-badge" id="fab-badge">1</div>
+</div>
+
+<!-- Message panel -->
+<div class="msg-wrap" id="msg-wrap">
+  <div class="msg-hd">
+    <div class="msg-hd-title">連絡</div>
+    <span class="msg-close" onclick="toggleMsg()">×</span>
+  </div>
+  <div class="msg-list" id="msg-list">
+    <div>
+      <div class="bubble in">部員説明会の日程ですが、6月15日の放課後でいかがでしょうか？</div>
+      <div class="bubble-meta" style="padding-left:2px;">顧問 田中先生 · 6/1</div>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;">
+      <div class="bubble out">承知しました。15時でよろしいでしょうか。</div>
+      <div class="bubble-meta">保﨑 · 6/2</div>
+    </div>
+  </div>
+  <div class="msg-input-row">
+    <input class="msg-input" id="msg-inp" placeholder="メッセージを入力…" type="text" onkeydown="if(event.key==='Enter')sendMsg()">
+    <button class="msg-send" onclick="sendMsg()">↑</button>
+  </div>
+</div>
+
+<!-- Bottom Sheet -->
+<div class="scrim" id="scrim" onclick="closeSheet()"></div>
+<div class="sheet" id="sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hd"><div class="sheet-title" id="sh-title"></div></div>
+  <div class="sheet-body" id="sh-body"></div>
+</div>
+
+<script>
+const SURVEY_URL = 'https://hosaki8739-svg.github.io/marc-survey/';
+const GAS_URL = ''; // デプロイ後に設定
+
+const D = {
+  ai:{date:'',done:false},
+  mgr:{date:'',done:false},
+  exp:{date:'',done:false},
+  disc:{text:'',done:false},
+  rule:{text:'',done:false},
+  policies:[]
+};
+let mMode = '';
+const TOTAL = 8;
+let fixedDone = 2; // 覚書・名簿は初期済み
+
+function sw(n){
+  document.getElementById('s0').className='screen'+(n===0?' on':'');
+  document.getElementById('s1').className='screen'+(n===1?' on':'');
+  document.getElementById('t0').className='tab'+(n===0?' on':'');
+  document.getElementById('t1').className='tab'+(n===1?' on':'');
+}
+
+function toggleMsg(){
+  const w = document.getElementById('msg-wrap');
+  const b = document.getElementById('fab-badge');
+  const showing = w.classList.toggle('show');
+  if(showing) b.style.display='none';
+}
+
+function sendMsg(){
+  const inp = document.getElementById('msg-inp');
+  const txt = inp.value.trim();
+  if(!txt) return;
+  const list = document.getElementById('msg-list');
+  const d = document.createElement('div');
+  d.style.cssText = 'display:flex;flex-direction:column;align-items:flex-end;';
+  const now = new Date();
+  const time = (now.getMonth()+1)+'/'+now.getDate();
+  d.innerHTML = '<div class="bubble out">'+escHtml(txt)+'</div><div class="bubble-meta">保﨑 · '+time+'</div>';
+  list.appendChild(d);
+  inp.value = '';
+  list.scrollTop = list.scrollHeight;
+  // GAS送信（実装後に有効化）
+  // if(GAS_URL) postToGas({type:'message',text:txt});
+}
+
+function openSheet(title, html){
+  document.getElementById('sh-title').textContent = title;
+  document.getElementById('sh-body').innerHTML = html;
+  document.getElementById('scrim').classList.add('show');
+  document.getElementById('sheet').classList.add('show');
+  // シート内のinputにフォーカス
+  setTimeout(()=>{
+    const inp = document.querySelector('#sh-body input, #sh-body textarea');
+    if(inp) inp.focus();
+  }, 320);
+}
+
+function closeSheet(){
+  document.getElementById('scrim').classList.remove('show');
+  document.getElementById('sheet').classList.remove('show');
+}
+
+function openDate(key, label){
+  mMode = key;
+  openSheet(label,
+    '<div class="s-label">実施日時</div>'+
+    '<input class="s-input" id="sv" type="text" placeholder="例：2025年6月15日 15:00" value="'+escHtml(D[key].date)+'">'+
+    '<div class="s-btns">'+
+    '<button class="s-cancel" onclick="closeSheet()">キャンセル</button>'+
+    '<button class="s-ok" onclick="saveDate()">保存</button>'+
+    '</div>'
+  );
+}
+
+function saveDate(){
+  const val = document.getElementById('sv').value.trim();
+  if(!val){ closeSheet(); return; }
+  const k = mMode;
+  D[k].date = val; D[k].done = true;
+  document.getElementById('ck-'+k).classList.add('on');
+  if(k==='ai'){
+    document.getElementById('sb-ai').textContent = val;
+    document.getElementById('ac-ai').innerHTML = '<span class="done-badge">済</span>';
+  } else if(k==='mgr'){
+    document.getElementById('sb-mgr').textContent = val;
+    document.getElementById('ac-mgr').innerHTML = '<span class="done-badge">済</span>';
+  } else {
+    document.getElementById('sb-exp').textContent = 'QR配布を含む · '+val;
+    document.getElementById('ac-exp').innerHTML = '<span class="done-badge">済</span>';
+  }
+  updateProg(); closeSheet();
+  saveToGas(k, {date:val});
+}
+
+function openText(key, label){
+  mMode = key;
+  openSheet(label,
+    '<div class="s-label">内容を入力</div>'+
+    '<textarea class="s-textarea" id="sv" placeholder="自由に記入してください…">'+escHtml(D[key].text)+'</textarea>'+
+    '<div class="s-btns">'+
+    '<button class="s-cancel" onclick="closeSheet()">キャンセル</button>'+
+    '<button class="s-ok" onclick="saveText()">保存</button>'+
+    '</div>'
+  );
+}
+
+function saveText(){
+  const val = document.getElementById('sv').value.trim();
+  if(!val){ closeSheet(); return; }
+  const k = mMode;
+  D[k].text = val; D[k].done = true;
+  document.getElementById('ck-'+k).classList.add('on');
+  const lb = {disc:'部員対話活動', rule:'運用ルール'};
+  document.getElementById('ac-'+k).innerHTML =
+    '<button class="btn btn-blue" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
+  updateProg(); closeSheet();
+  saveToGas(k, {text:val});
+}
+
+function viewText(key, label){
+  openSheet(label,
+    '<div class="view-text">'+escHtml(D[key].text)+'</div>'+
+    '<div class="s-btns">'+
+    '<button class="s-cancel" onclick="openText(\''+key+'\',\''+label+'\')">編集</button>'+
+    '<button class="s-ok" onclick="closeSheet()">閉じる</button>'+
+    '</div>'
+  );
+}
+
+function openPolicy(){
+  openSheet('指導ポリシー・運用ルールを追加',
+    '<div class="s-label">内容</div>'+
+    '<textarea class="s-textarea" id="sv" placeholder="自由に入力してください…"></textarea>'+
+    '<div class="s-btns">'+
+    '<button class="s-cancel" onclick="closeSheet()">キャンセル</button>'+
+    '<button class="s-ok" onclick="savePolicy()">追加</button>'+
+    '</div>'
+  );
+}
+
+function savePolicy(){
+  const val = document.getElementById('sv').value.trim();
+  if(!val){ closeSheet(); return; }
+  D.policies.push(val);
+  renderPolicies(); closeSheet();
+  saveToGas('policies', {policies:D.policies});
+}
+
+function deletePolicy(i){
+  D.policies.splice(i,1);
+  renderPolicies();
+  saveToGas('policies', {policies:D.policies});
+}
+
+function renderPolicies(){
+  const list = document.getElementById('pl-list');
+  const hint = document.getElementById('pl-hint');
+  if(!D.policies.length){ hint.style.display='block'; list.innerHTML=''; return; }
+  hint.style.display = 'none';
+  list.innerHTML = D.policies.map((p,i)=>
+    '<div class="pl-row"><span>'+escHtml(p)+'</span>'+
+    '<span class="pl-del" onclick="deletePolicy('+i+')">✕</span></div>'
+  ).join('');
+}
+
+function updateProg(){
+  let done = fixedDone;
+  if(D.ai.done) done++;
+  if(D.mgr.done) done++;
+  if(D.exp.done) done++;
+  if(D.disc.done) done++;
+  if(D.rule.done) done++;
+  document.getElementById('pbar').style.width = Math.round(done/TOTAL*100)+'%';
+  document.getElementById('ptext').textContent = done+' / '+TOTAL+' 完了';
+}
+
+function openDrive(url){
+  if(url && url.startsWith('http')) window.open(url,'_blank');
+  else alert('書類URLが未設定です。管理者に連絡してください。');
+}
+
+function openSurvey(){
+  window.open(SURVEY_URL, '_blank');
+  // 開いた時点でチェックをいれる
+  document.getElementById('ck-survey').classList.add('on');
+}
+
+function escHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// GAS連携（スプレッドシートへの保存）
+async function saveToGas(key, data){
+  if(!GAS_URL) return;
+  try {
+    await fetch(GAS_URL, {
+      method:'POST',
+      body: JSON.stringify({school: document.getElementById('school-name').textContent, key, ...data})
+    });
+  } catch(e){ console.warn('GAS save failed', e); }
+}
+
+// ページ読み込み時にGASからデータ取得（実装後に有効化）
+// async function loadFromGas(){ ... }
+</script>
+</body>
+</html>
