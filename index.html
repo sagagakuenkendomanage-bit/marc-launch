@@ -295,7 +295,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Hiragino Sans','Noto Sans JP'
 
 <script>
 const SURVEY_URL = 'https://hosaki8739-svg.github.io/marc-survey/';
-const GAS_URL = 'https://script.google.com/macros/s/AKfycbwVAZQVU2sVggSSSS27UNMc5vZ2yVpZvK1fBqmAnG7uskX9aDn6X_HCbx5FScmSy1YL/exec';
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzAEjob4wNJKirt1L3HG97ujk7oLEC8dCLm3zBRXana_ci-0TbiUwTunLckWTwTMd-2/exec';
 
 const D = {
   ai:{date:'',done:false},
@@ -307,6 +307,54 @@ const D = {
 };
 let mMode = '';
 const TOTAL = 8;
+const LS_KEY = 'marc_launch_data';
+
+function lsSave(){
+  try { localStorage.setItem(LS_KEY, JSON.stringify(D)); } catch(e){}
+}
+
+function lsLoad(){
+  try {
+    const saved = localStorage.getItem(LS_KEY);
+    if(!saved) return;
+    const obj = JSON.parse(saved);
+    if(!obj) return;
+    ['ai','mgr','exp'].forEach(function(k){
+      if(obj[k] && obj[k].done && obj[k].date){
+        D[k].date = obj[k].date; D[k].done = true;
+        const chk = document.getElementById('ck-'+k);
+        if(chk) chk.classList.add('on');
+        if(k==='ai'){
+          const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=obj[k].date;
+          const ac=document.getElementById('ac-ai'); if(ac) ac.innerHTML='<span class="done-badge">済</span>';
+        } else if(k==='mgr'){
+          const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=obj[k].date;
+          const ac=document.getElementById('ac-mgr'); if(ac) ac.innerHTML='<span class="done-badge">済</span>';
+        } else {
+          const sb=document.getElementById('sb-exp'); if(sb) sb.textContent='QR配布を含む · '+obj[k].date;
+          const ac=document.getElementById('ac-exp'); if(ac) ac.innerHTML='<span class="done-badge">済</span>';
+        }
+      }
+    });
+    ['disc','rule'].forEach(function(k){
+      if(obj[k] && obj[k].done && obj[k].text){
+        D[k].text = obj[k].text; D[k].done = true;
+        const chk = document.getElementById('ck-'+k);
+        if(chk) chk.classList.add('on');
+        const lb={disc:'部員対話活動',rule:'運用ルール'};
+        const ac=document.getElementById('ac-'+k);
+        if(ac) ac.innerHTML='<button class="btn btn-blue" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
+      }
+    });
+    if(obj.policies && obj.policies.length){
+      D.policies = obj.policies;
+      renderPolicies();
+    }
+    updateProg();
+  } catch(e){}
+}
+
+document.addEventListener('DOMContentLoaded', function(){ lsLoad(); });
 let fixedDone = 2; // 覚書・名簿は初期済み
 
 function sw(n){
@@ -385,7 +433,7 @@ function saveDate(){
     document.getElementById('sb-exp').textContent = 'QR配布を含む · '+val;
     document.getElementById('ac-exp').innerHTML = '<span class="done-badge">済</span>';
   }
-  updateProg(); closeSheet();
+  updateProg(); lsSave(); closeSheet();
   saveToGas(k, {date:val});
 }
 
@@ -410,7 +458,7 @@ function saveText(){
   const lb = {disc:'部員対話活動', rule:'運用ルール'};
   document.getElementById('ac-'+k).innerHTML =
     '<button class="btn btn-blue" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
-  updateProg(); closeSheet();
+  updateProg(); lsSave(); closeSheet();
   saveToGas(k, {text:val});
 }
 
@@ -439,13 +487,14 @@ function savePolicy(){
   const val = document.getElementById('sv').value.trim();
   if(!val){ closeSheet(); return; }
   D.policies.push(val);
-  renderPolicies(); closeSheet();
+  renderPolicies(); lsSave(); closeSheet();
   saveToGas('policies', {policies:D.policies});
 }
 
 function deletePolicy(i){
   D.policies.splice(i,1);
   renderPolicies();
+  lsSave();
   saveToGas('policies', {policies:D.policies});
 }
 
