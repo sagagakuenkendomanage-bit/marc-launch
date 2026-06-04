@@ -741,9 +741,9 @@ function saveDate(){
   const k=mMode;
   D[k].date=val; D[k].done=true;
   document.getElementById('ck-'+k).classList.add('on');
-  if(k==='ai'){ document.getElementById('sb-ai').textContent=val; document.getElementById('ac-ai').innerHTML='<span class="done-badge">済</span>'; }
-  else if(k==='mgr'){ document.getElementById('sb-mgr').textContent=val; document.getElementById('ac-mgr').innerHTML='<span class="done-badge">済</span>'; }
-  else { document.getElementById('sb-exp').textContent=val; document.getElementById('ac-exp').innerHTML='<span class="done-badge">済</span>'; }
+  if(k==='ai'){ document.getElementById('sb-ai').textContent=val; document.getElementById('ac-ai').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
+  else if(k==='mgr'){ document.getElementById('sb-mgr').textContent=val; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
+  else { document.getElementById('sb-exp').textContent=val; document.getElementById('ac-exp').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
   lsSave(); updateProg(); closeSheet();
   saveToGas(k,{date:val});
 }
@@ -986,9 +986,9 @@ function lsLoad(){
       if(obj[k]&&obj[k].done&&obj[k].date){
         D[k].date=obj[k].date; D[k].done=true;
         document.getElementById('ck-'+k)?.classList.add('on');
-        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-ai').innerHTML='<span class="done-badge">済</span>'; }
-        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-mgr').innerHTML='<span class="done-badge">済</span>'; }
-        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-exp').innerHTML='<span class="done-badge">済</span>'; }
+        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-ai').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
+        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
+        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-exp').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
       }
     });
     ['disc','rule'].forEach(function(k){
@@ -1051,9 +1051,9 @@ function loadFromGas(){
       if(d[k]&&d[k].done&&d[k].date){
         D[k].date=d[k].date; D[k].done=true;
         document.getElementById('ck-'+k)?.classList.add('on');
-        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-ai').innerHTML='<span class="done-badge">済</span>'; }
-        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-mgr').innerHTML='<span class="done-badge">済</span>'; }
-        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-exp').innerHTML='<span class="done-badge">済</span>'; }
+        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-ai').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
+        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
+        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-exp').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
       }
     });
     // テキスト系
