@@ -1006,12 +1006,19 @@ function lsLoad(){
 }
 
 // ===== GAS =====
-async function saveToGas(key,data){
+async function saveToGas(key, data){
   if(!GAS_URL) return;
   try{
-    const school = key==='memo' ? data.school : document.getElementById('school-name').textContent;
-    await fetch(GAS_URL,{method:'POST',body:JSON.stringify({school:school,key:key,...data})});
-  }catch(e){}
+    const school = (D.memo && D.memo.school) 
+      ? D.memo.school 
+      : document.getElementById('school-name').textContent;
+    await fetch(GAS_URL, {
+      method:'POST',
+      mode:'no-cors',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({school:school, key:key, ...data})
+    });
+  }catch(e){ console.warn('GAS送信エラー:', e); }
 }
 function loadFromGas(){
   if(!GAS_URL) return;
