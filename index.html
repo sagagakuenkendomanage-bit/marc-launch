@@ -1018,6 +1018,22 @@ function loadFromGas(){
     cleanup();
     if(json.status!=='ok'||!json.data) return;
     const d=json.data;
+    // 覚書
+    if(d.memo&&d.memo.agreed){
+      D.memo=d.memo;
+      document.getElementById('ck-memo')?.classList.add('on');
+      const it=document.getElementById('tl-memo');
+      if(it) it.textContent='覚書（'+(d.memo.date||'')+(d.memo.name?' '+d.memo.name:'')+'）';
+      const row=document.getElementById('ck-memo')?.closest('.row');
+      if(row){ const btn=row.querySelector('.btn-primary'); if(btn) btn.outerHTML='<span class="done-badge">済</span>'; }
+    }
+    // 対象者リスト
+    if(d.roster){
+      D.roster=true;
+      document.getElementById('ck-roster')?.classList.add('on');
+      const it=document.getElementById('tl-roster'); if(it) it.classList.add('done');
+    }
+    // 日程系
     ['ai','mgr','exp'].forEach(function(k){
       if(d[k]&&d[k].done&&d[k].date){
         D[k].date=d[k].date; D[k].done=true;
@@ -1027,6 +1043,7 @@ function loadFromGas(){
         else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-exp').innerHTML='<span class="done-badge">済</span>'; }
       }
     });
+    // テキスト系
     ['disc','rule'].forEach(function(k){
       if(d[k]&&d[k].done&&d[k].text){
         D[k].text=d[k].text; D[k].done=true;
@@ -1036,6 +1053,11 @@ function loadFromGas(){
         if(ac) ac.innerHTML='<button class="btn btn-primary" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
       }
     });
+    // アンケート
+    if(d.survey){ D.survey=true; document.getElementById('ck-survey')?.classList.add('on'); }
+    // STEP7
+    if(d.s7){ D.s7=true; document.getElementById('ck-s7')?.classList.add('on'); }
+    // ポリシー
     if(d.policies&&d.policies.length){ D.policies=d.policies; renderPolicies(); }
     lsSave(); updateProg();
   };
