@@ -123,17 +123,46 @@ body{
 .btn{
   border:none;border-radius:8px;
   font-family:'Noto Sans JP',sans-serif;
-  font-size:12px;font-weight:700;
-  padding:7px 14px;cursor:pointer;
+  font-size:12px;font-weight:600;
+  padding:7px 16px;cursor:pointer;
   transition:all .15s;white-space:nowrap;
-  letter-spacing:.02em;
+  letter-spacing:.02em;min-height:34px;
 }
 .btn:active{transform:scale(.96);}
-.btn-primary{background:var(--primary);color:#fff;box-shadow:0 1px 3px rgba(15,110,86,.3);}
-.btn-primary:hover{background:#0a5a45;}
-.btn-ghost{background:var(--bg);color:var(--ink2);border:1px solid var(--border2);}
-.btn-ghost:hover{background:var(--border);color:var(--ink);}
-.done-badge{font-size:12px;font-weight:700;color:var(--primary);}
+
+/* Apple HIG準拠 セマンティックボタン */
+/* Primary: 画面で最も重要な1アクション → systemBlue */
+.btn-primary{
+  background:#007AFF;color:#fff;
+  border:none;border-radius:10px;
+  box-shadow:0 1px 3px rgba(0,122,255,.25);
+}
+.btn-primary:hover{background:#0066CC;}
+
+/* Secondary: 補助アクション → tinted blue (ghost) */
+.btn-ghost{
+  background:rgba(0,122,255,.08);color:#007AFF;
+  border:none;border-radius:10px;
+}
+.btn-ghost:hover{background:rgba(0,122,255,.14);}
+
+/* Neutral: 情報参照・変更 → systemGray */
+.btn-neutral{
+  background:rgba(142,142,147,.12);color:#3A3A3C;
+  border:none;border-radius:10px;
+}
+.btn-neutral:hover{background:rgba(142,142,147,.2);}
+
+/* Destructive: 削除 → systemRed */
+.btn-danger{
+  background:rgba(255,59,48,.1);color:#FF3B30;
+  border:none;border-radius:10px;
+}
+.btn-danger:hover{background:rgba(255,59,48,.18);}
+
+/* チェック完了色 */
+.ck.on{background:#34C759;border-color:#34C759;}
+.ck.on::after{content:'✓';color:#fff;font-size:12px;font-weight:700;}
 
 /* ===== YOUTUBE LINK ===== */
 .yt-link{
@@ -307,7 +336,7 @@ body{
 }
 .s-ok{
   flex:1;font-size:15px;padding:13px;border:none;
-  border-radius:var(--r-sm);background:var(--primary);
+  border-radius:10px;background:#007AFF;
   color:#fff;cursor:pointer;font-weight:700;
   font-family:'Noto Sans JP',sans-serif;
   box-shadow:0 2px 8px rgba(15,110,86,.3);
@@ -381,7 +410,7 @@ body{
           <div class="row">
             <div class="ck" id="ck-roster"></div>
             <div class="ii"><div class="it" id="tl-roster">対象者リスト</div></div>
-            <div class="ia"><button class="btn btn-primary" onclick="openRoster()">閲覧</button></div>
+            <div class="ia"><button class="btn btn-primary" onclick="openRoster()">提出</button></div>
           </div>
           <div class="row">
             <div class="ck" id="ck-ai"></div>
@@ -741,9 +770,9 @@ function saveDate(){
   const k=mMode;
   D[k].date=val; D[k].done=true;
   document.getElementById('ck-'+k).classList.add('on');
-  if(k==='ai'){ document.getElementById('sb-ai').textContent=val; document.getElementById('ac-ai').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
-  else if(k==='mgr'){ document.getElementById('sb-mgr').textContent=val; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
-  else { document.getElementById('sb-exp').textContent=val; document.getElementById('ac-exp').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
+  if(k==='ai'){ document.getElementById('sb-ai').textContent=val; document.getElementById('ac-ai').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
+  else if(k==='mgr'){ document.getElementById('sb-mgr').textContent=val; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
+  else { document.getElementById('sb-exp').textContent=val; document.getElementById('ac-exp').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
   lsSave(); updateProg(); closeSheet();
   saveToGas(k,{date:val});
 }
@@ -768,7 +797,7 @@ function saveText(){
   const k=mMode; D[k].text=val; D[k].done=true;
   document.getElementById('ck-'+k).classList.add('on');
   const lb={disc:'部員主体ミーティング',rule:'支援ツール'};
-  document.getElementById('ac-'+k).innerHTML='<button class="btn btn-primary" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
+  document.getElementById('ac-'+k).innerHTML='<button class="btn btn-neutral" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
   lsSave(); updateProg(); closeSheet();
   saveToGas(k,{text:val});
 }
@@ -786,62 +815,41 @@ function viewText(key,label){
 
 // ===== POLICY =====
 function openPolicy(){
-  openSheet('ファイルを追加',
+  openSheet('指導ポリシーを追加',
+    '<div class="s-note"><span class="s-note-icon">ℹ️</span><div class="s-note-text">タイトルを入力してファイルを選択すると、メールアプリが開きます。そのまま送信してください。</div></div>'+
     '<div class="s-label">タイトル</div>'+
     '<input class="s-input" id="sv-title" type="text" placeholder="例：指導ポリシー2025">'+
-    '<div class="s-label">ファイルを選択（3MBまで）</div>'+
-    '<input type="file" id="sv-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.pptx" style="width:100%;padding:10px 0;font-size:14px;margin-bottom:6px;">'+
-    '<div id="sv-file-msg" style="font-size:12px;color:var(--ink3);margin-bottom:14px;">PDF・画像・Office文書に対応</div>'+
-    '<div class="s-btns"><button class="s-cancel" onclick="closeSheet()">キャンセル</button><button class="s-ok" onclick="savePolicy()">追加</button></div>'
+    '<div class="s-label">ファイルを選択</div>'+
+    '<input type="file" id="sv-file" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx,.xlsx,.pptx" style="width:100%;padding:10px 0;font-size:14px;margin-bottom:14px;">'+
+    '<div class="s-btns"><button class="s-cancel" onclick="closeSheet()">キャンセル</button><button class="s-ok" onclick="savePolicy()">メールで送信</button></div>'
   );
 }
 function savePolicy(){
-  const titleEl=document.getElementById('sv-title');
-  const fileEl=document.getElementById('sv-file');
-  const msgEl=document.getElementById('sv-file-msg');
-  const file=fileEl&&fileEl.files[0];
-  if(!file){if(msgEl){msgEl.style.color='var(--red)';msgEl.textContent='ファイルを選択してください';}return;}
-  if(file.size>3*1024*1024){if(msgEl){msgEl.style.color='var(--red)';msgEl.textContent='3MB以内のファイルを選択してください';}return;}
-  const title=(titleEl&&titleEl.value.trim())||file.name;
-  const reader=new FileReader();
-  reader.onload=function(e){
-    D.policies.push({title:title,fileName:file.name,fileType:file.type,data:e.target.result,id:Date.now()});
-    renderPolicies(); lsSave(); closeSheet();
-  };
-  reader.readAsDataURL(file);
-}
-function deletePolicy(i){ D.policies.splice(i,1); renderPolicies(); lsSave(); }
-function viewPolicy(i){
-  const p=D.policies[i];
-  if(!p||!p.data) return;
-  if(p.fileType&&p.fileType.startsWith('image/')){
-    const w=window.open(); w.document.write('<img src="'+p.data+'" style="max-width:100%;">');
-  } else {
-    const byteStr=atob(p.data.split(',')[1]);
-    const ab=new ArrayBuffer(byteStr.length);
-    const ia=new Uint8Array(ab);
-    for(let j=0;j<byteStr.length;j++) ia[j]=byteStr.charCodeAt(j);
-    const blob=new Blob([ab],{type:p.fileType||'application/octet-stream'});
-    window.open(URL.createObjectURL(blob),'_blank');
-  }
+  const title = document.getElementById('sv-title')?.value.trim() || '指導ポリシー';
+  const fileEl = document.getElementById('sv-file');
+  const file = fileEl && fileEl.files[0];
+  const school = (D.memo && D.memo.school) ? D.memo.school : '佐賀学園 剣道部';
+  const subject = encodeURIComponent('[MARC] 指導ポリシー添付：' + title + '（' + school + '）');
+  const body = encodeURIComponent('MARCプログラム 導入・運用ナビより\n\n学校：' + school + '\nタイトル：' + title + '\n\n※ファイルを添付して送信してください。');
+  window.location.href = 'mailto:hosaki8739@gmail.com?subject=' + subject + '&body=' + body;
+  // タイトルだけローカルに記録
+  D.policies.push({title: title, url: '', id: Date.now()});
+  renderPolicies(); lsSave(); closeSheet();
 }
 function renderPolicies(){
   const list=document.getElementById('pl-list');
   const hint=document.querySelector('.pl-hint');
   if(!D.policies.length){if(hint)hint.style.display='block';list.innerHTML='';return;}
   if(hint)hint.style.display='none';
-  const icons={'application/pdf':'📄','image/jpeg':'🖼','image/png':'🖼'};
   list.innerHTML=D.policies.map(function(p,i){
-    const title=typeof p==='string'?p:(p.title||p.fileName||'');
-    const hasFile=!!p.data;
-    const icon=hasFile?(icons[p.fileType]||'📎'):'🔗';
+    const title=typeof p==='string'?p:(p.title||'');
+    const url=typeof p==='string'?'':(p.url||'');
     return '<div class="pl-row">'+
-      '<span style="font-size:20px;flex-shrink:0;">'+icon+'</span>'+
-      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(title)+'</div>'+(p.fileName?'<div style="font-size:11px;color:var(--ink3);">'+escHtml(p.fileName)+'</div>':'')+
-      '</div>'+
+      '<span style="font-size:20px;flex-shrink:0;">📄</span>'+
+      '<div style="flex:1;min-width:0;"><div style="font-size:13px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escHtml(title)+'</div></div>'+
       '<div style="display:flex;gap:6px;flex-shrink:0;">'+
-        (hasFile?'<button class="btn btn-primary" style="font-size:11px;padding:5px 10px;" onclick="viewPolicy('+i+')">閲覧</button>':'')+
-        '<span class="pl-del" onclick="deletePolicy('+i+')">✕</span>'+
+        (url?'<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="window.open(\''+escHtml(url)+'\',\'_blank\')">閲覧</button>':'')+
+        '<span class="pl-del" style="color:#FF3B30;" onclick="deletePolicy('+i+')">✕</span>'+
       '</div></div>';
   }).join('');
 }
@@ -912,7 +920,7 @@ function confirmMemo(){
   const it = document.getElementById('tl-memo');
   if(it){ it.classList.add('done'); it.textContent = '覚書（'+dateStr+' '+name+'）'; }
   const row = document.getElementById('ck-memo').closest('.row');
-  if(row){ const btn = row.querySelector('.btn'); if(btn) btn.outerHTML='<span class="done-badge">済</span>'; }
+  // 覚書確認済み - ボタンはそのまま残す
 
   // GAS保存
   D.memo = { school:school, name:name, date:dateStr, agreed:true };
@@ -924,13 +932,22 @@ function confirmMemo(){
 
 
 function openRoster(){
-  openSheet('対象者リスト',
-    '<div class="s-note"><span class="s-note-icon">ℹ️</span><div class="s-note-text">このプログラムに参加するすべての方について、氏名、ふりがな、性別、学年、組（生徒の場合）、および立場（指導者の場合は顧問・コーチ等）を一覧にまとめてご提出ください。なお、画像データは登録できません。</div></div>'+
-    '<div class="s-btns"><button class="s-cancel" onclick="closeSheet()">閉じる</button><button class="s-ok" onclick="confirmRoster()">ファイルを開く</button></div>'
+  openSheet('対象者リストを提出',
+    '<div class="s-note"><span class="s-note-icon">ℹ️</span><div class="s-note-text">氏名、ふりがな、性別、学年、組（生徒の場合）、立場（指導者の場合は顧問・コーチ等）を一覧にまとめてご提出ください。</div></div>'+
+    '<div class="s-label">タイトル</div>'+
+    '<input class="s-input" id="sv-roster-title" type="text" placeholder="例：対象者リスト_佐賀北高校">'+
+    '<div class="s-label">ファイルを選択（3MBまで）</div>'+
+    '<input type="file" id="sv-roster-file" accept=".xlsx,.xls,.csv,.pdf,.doc,.docx" style="width:100%;padding:10px 0;font-size:14px;margin-bottom:6px;">'+
+    '<div style="font-size:12px;color:var(--ink3);margin-bottom:14px;">Excel・CSV・PDF・Word に対応</div>'+
+    '<div class="s-btns"><button class="s-cancel" onclick="closeSheet()">キャンセル</button><button class="s-ok" onclick="confirmRoster()">メールで提出</button></div>'
   );
 }
 function confirmRoster(){
-  window.open('https://drive.google.com/file/d/1ZC0mgDTpQOoQrEvr6QuRvpWVJwE1OTU9/view?usp=sharing','_blank');
+  const title = document.getElementById('sv-roster-title')?.value.trim() || '対象者リスト';
+  const school = (D.memo && D.memo.school) ? D.memo.school : '佐賀北高校 剣道部';
+  const subject = encodeURIComponent('[MARC] 対象者リスト提出：' + title + '（' + school + '）');
+  const body = encodeURIComponent('MARCプログラム 導入・運用ナビより\n\n学校：' + school + '\nタイトル：' + title + '\n\n※ファイルを添付して送信してください。');
+  window.location.href = 'mailto:hosaki8739@gmail.com?subject=' + subject + '&body=' + body;
   document.getElementById('ck-roster')?.classList.add('on');
   const it=document.getElementById('tl-roster'); if(it) it.classList.add('done');
   D.roster=true; lsSave(); updateProg(); closeSheet();
@@ -964,7 +981,7 @@ function lsLoad(){
       const it=document.getElementById('tl-memo');
       if(it) it.textContent='覚書（'+(obj.memo.date||'')+(obj.memo.name?' '+obj.memo.name:'')+'）';
       const row=document.getElementById('ck-memo')?.closest('.row');
-      if(row){ const btn=row.querySelector('.btn-primary'); if(btn) btn.outerHTML='<span class="done-badge">済</span>'; }
+      // ボタンはそのまま残す（再確認可能）
     }
     // 対象者リスト
     if(obj.roster){
@@ -986,9 +1003,9 @@ function lsLoad(){
       if(obj[k]&&obj[k].done&&obj[k].date){
         D[k].date=obj[k].date; D[k].done=true;
         document.getElementById('ck-'+k)?.classList.add('on');
-        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-ai').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
-        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
-        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-exp').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
+        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-ai').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
+        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
+        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=obj[k].date; document.getElementById('ac-exp').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
       }
     });
     ['disc','rule'].forEach(function(k){
@@ -997,7 +1014,7 @@ function lsLoad(){
         document.getElementById('ck-'+k)?.classList.add('on');
         const lb={disc:'部員主体ミーティング',rule:'支援ツール'};
         const ac=document.getElementById('ac-'+k);
-        if(ac) ac.innerHTML='<button class="btn btn-primary" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
+        if(ac) ac.innerHTML='<button class="btn btn-neutral" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
       }
     });
     if(obj.policies&&obj.policies.length){ D.policies=obj.policies; renderPolicies(); }
@@ -1038,7 +1055,7 @@ function loadFromGas(){
       const it=document.getElementById('tl-memo');
       if(it) it.textContent='覚書（'+(d.memo.date||'')+(d.memo.name?' '+d.memo.name:'')+'）';
       const row=document.getElementById('ck-memo')?.closest('.row');
-      if(row){ const btn=row.querySelector('.btn-primary'); if(btn) btn.outerHTML='<span class="done-badge">済</span>'; }
+      // ボタンはそのまま残す（再確認可能）
     }
     // 対象者リスト
     if(d.roster){
@@ -1051,9 +1068,9 @@ function loadFromGas(){
       if(d[k]&&d[k].done&&d[k].date){
         D[k].date=d[k].date; D[k].done=true;
         document.getElementById('ck-'+k)?.classList.add('on');
-        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-ai').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
-        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
-        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-exp').innerHTML='<button class="btn btn-ghost" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
+        if(k==='ai'){ const sb=document.getElementById('sb-ai'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-ai').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'ai\',\'基本情報登録\')">変更</button>'; }
+        else if(k==='mgr'){ const sb=document.getElementById('sb-mgr'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-mgr').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'mgr\',\'管理者説明会\')">変更</button>'; }
+        else { const sb=document.getElementById('sb-exp'); if(sb) sb.textContent=d[k].date; document.getElementById('ac-exp').innerHTML='<button class="btn btn-neutral" style="font-size:11px;padding:5px 10px;" onclick="openDate(\'exp\',\'ユーザー説明会\')">変更</button>'; }
       }
     });
     // テキスト系
@@ -1063,7 +1080,7 @@ function loadFromGas(){
         document.getElementById('ck-'+k)?.classList.add('on');
         const lb={disc:'部員主体ミーティング',rule:'支援ツール'};
         const ac=document.getElementById('ac-'+k);
-        if(ac) ac.innerHTML='<button class="btn btn-primary" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
+        if(ac) ac.innerHTML='<button class="btn btn-neutral" onclick="viewText(\''+k+'\',\''+lb[k]+'\')">参照</button>';
       }
     });
     // アンケート
