@@ -1009,9 +1009,9 @@ function lsLoad(){
 async function saveToGas(key, data){
   if(!GAS_URL) return;
   try{
-    const school = (D.memo && D.memo.school) 
-      ? D.memo.school 
-      : document.getElementById('school-name').textContent;
+    const school = (D.memo && D.memo.school)
+      ? D.memo.school
+      : '佐賀学園 剣道部';
     await fetch(GAS_URL, {
       method:'POST',
       mode:'no-cors',
