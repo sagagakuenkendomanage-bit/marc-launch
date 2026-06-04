@@ -1039,7 +1039,7 @@ async function saveToGas(key, data){
 }
 function loadFromGas(){
   if(!GAS_URL) return;
-  const school=document.getElementById('school-name').textContent;
+  const school = (D.memo && D.memo.school) ? D.memo.school : '佐賀学園 剣道部';
   const cb='_mlcb_'+Date.now();
   const sc=document.createElement('script');
   const timer=setTimeout(function(){cleanup();},10000);
