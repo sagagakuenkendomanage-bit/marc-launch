@@ -571,6 +571,43 @@ body{
 <!-- TAB 1 -->
 <div class="screen" id="s1">
   <div class="t2">
+
+    <!-- お知らせ・予定 -->
+    <div style="background:#fff;border-radius:14px;border:1px solid #e8ede8;padding:16px 18px;margin-bottom:12px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:700;color:#1a3a1a;">📅 お知らせ・予定</div>
+        <button onclick="openCalAdd()" style="background:#1B3A5C;color:#fff;border:none;border-radius:8px;padding:5px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;">＋ 予定を追加</button>
+      </div>
+      <div id="idx-cal-events" style="display:flex;flex-direction:column;gap:8px;margin-bottom:10px;">
+        <div style="font-size:12px;color:#888;">読み込み中…</div>
+      </div>
+      <div id="idx-agenda-wrap" style="border:1px solid #e8ede8;border-radius:10px;padding:10px 14px;display:none;margin-bottom:10px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+          <div style="background:#1B3A5C;color:#fff;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;">次回</div>
+          <div id="idx-agenda-date" style="font-size:12px;font-weight:600;color:#1a3a1a;">—</div>
+        </div>
+        <div style="background:#f5f7f0;border-left:3px solid #2d6a4f;border-radius:0 6px 6px 0;padding:6px 10px;">
+          <div style="font-size:9px;font-weight:700;color:#2d6a4f;margin-bottom:2px;letter-spacing:.06em;">議題</div>
+          <div id="idx-agenda-text" style="font-size:12px;color:#1a3a1a;line-height:1.6;">—</div>
+        </div>
+      </div>
+      <div id="idx-cal-add-form" style="display:none;margin-top:10px;border-top:1px solid #e8ede8;padding-top:10px;">
+        <div style="font-size:11px;font-weight:700;color:#666;margin-bottom:6px;">Googleカレンダーに予定を追加</div>
+        <input id="idx-cal-title" placeholder="予定のタイトル" style="width:100%;font-size:13px;padding:7px 10px;border:1px solid #ddd;border-radius:7px;margin-bottom:6px;font-family:inherit;box-sizing:border-box;">
+        <div style="display:flex;gap:6px;margin-bottom:8px;">
+          <input type="date" id="idx-cal-date" style="flex:1;font-size:12px;padding:6px 8px;border:1px solid #ddd;border-radius:7px;">
+          <input type="time" id="idx-cal-start" style="flex:1;font-size:12px;padding:6px 8px;border:1px solid #ddd;border-radius:7px;" value="17:00">
+          <span style="display:flex;align-items:center;font-size:12px;color:#888;">〜</span>
+          <input type="time" id="idx-cal-end" style="flex:1;font-size:12px;padding:6px 8px;border:1px solid #ddd;border-radius:7px;" value="18:00">
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button onclick="submitCalAdd()" style="flex:1;background:#1B3A5C;color:#fff;border:none;border-radius:8px;padding:8px;font-size:12px;font-weight:700;cursor:pointer;font-family:inherit;">追加する</button>
+          <button onclick="document.getElementById('idx-cal-add-form').style.display='none'" style="flex:1;background:#f0f0f0;color:#333;border:none;border-radius:8px;padding:8px;font-size:12px;cursor:pointer;font-family:inherit;">キャンセル</button>
+        </div>
+      </div>
+      <a href="https://calendar.google.com/calendar/r" target="_blank" style="display:inline-flex;align-items:center;gap:4px;font-size:11px;color:#888;text-decoration:none;margin-top:10px;">📅 カレンダーを開く</a>
+    </div>
+
     <a class="bigbtn" href="https://calendar.google.com/calendar/r?cid=f73c9138556948d4566156c4b995a372a35d0bb1e51b2f5c6e2b3342a25e0531@group.calendar.google.com" target="_blank">
       <div class="bigbtn-icon">📅</div>
       <div><div class="bigbtn-title">MARCカレンダー</div><div class="bigbtn-sub">稽古・ミーティングの日程管理</div></div>
@@ -1093,7 +1130,76 @@ document.addEventListener('DOMContentLoaded',function(){
   loadFromGas();
   renderMemos();
   updateProg();
+  loadNewsForIndex();
 });
+
+// ===== お知らせ・予定 =====
+const GAS_DASH = 'https://script.google.com/macros/s/AKfycbzAEjob4wNJKirt1L3HG97ujk7oLEC8dCLm3zBRXana_ci-0TbiUwTunLckWTwTMd-2/exec';
+const CAL_ID_GAKUEN = 'f73c9138556948d4566156c4b995a372a35d0bb1e51b2f5c6e2b3342a25e0531@group.calendar.google.com';
+
+function loadNewsForIndex(){
+  fetch(GAS_DASH + '?action=getNews', { method: 'GET' })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.status !== 'ok') return;
+    const calEl = document.getElementById('idx-cal-events');
+    if(calEl){
+      if(data.calendar && data.calendar.length){
+        calEl.innerHTML = data.calendar.map(function(ev){
+          const bg = ev.today ? '#1B3A5C' : '#E6F5F0';
+          const col = ev.today ? '#fff' : '#0F6E56';
+          const timeStr = ev.time ? ' ' + ev.time : '';
+          return '<div style="display:flex;align-items:center;gap:10px;">' +
+            '<div style="background:'+bg+';color:'+col+';border-radius:6px;padding:2px 8px;font-size:11px;font-weight:700;white-space:nowrap;min-width:40px;text-align:center;">' + (ev.date||'') + '</div>' +
+            '<div style="font-size:12px;color:#333;">' + (ev.title||'') + timeStr + '</div>' +
+          '</div>';
+        }).join('');
+      } else {
+        calEl.innerHTML = '<div style="font-size:12px;color:#888;">今後30日間の予定はありません</div>';
+      }
+    }
+    const agenda = data.agenda;
+    if(agenda && agenda.date){
+      const wrap = document.getElementById('idx-agenda-wrap');
+      if(wrap) wrap.style.display = 'block';
+      const d = new Date(agenda.date + 'T00:00:00');
+      const DOW = ['日','月','火','水','木','金','土'];
+      const dateLabel = (d.getMonth()+1) + '月' + d.getDate() + '日（' + DOW[d.getDay()] + '）';
+      const timeLabel = agenda.start && agenda.end ? ' ' + agenda.start + '〜' + agenda.end : '';
+      const dateEl = document.getElementById('idx-agenda-date');
+      if(dateEl) dateEl.textContent = dateLabel + timeLabel;
+      const textEl = document.getElementById('idx-agenda-text');
+      if(textEl) textEl.textContent = agenda.text || '—';
+    }
+  })
+  .catch(function(){
+    const calEl = document.getElementById('idx-cal-events');
+    if(calEl) calEl.innerHTML = '<div style="font-size:12px;color:#888;">予定の読み込みに失敗しました</div>';
+  });
+}
+
+function openCalAdd(){
+  const form = document.getElementById('idx-cal-add-form');
+  if(form) form.style.display = form.style.display === 'none' ? 'block' : 'none';
+}
+
+function submitCalAdd(){
+  const title = document.getElementById('idx-cal-title')?.value.trim();
+  const date  = document.getElementById('idx-cal-date')?.value;
+  const start = document.getElementById('idx-cal-start')?.value || '17:00';
+  const end   = document.getElementById('idx-cal-end')?.value   || '18:00';
+  if(!title){ alert('タイトルを入力してください'); return; }
+  if(!date){ alert('日付を入力してください'); return; }
+  const d = date.replace(/-/g,'');
+  const startStr = d + 'T' + start.replace(':','') + '00';
+  const endStr   = d + 'T' + end.replace(':','')   + '00';
+  const url = 'https://calendar.google.com/calendar/render?action=TEMPLATE' +
+    '&text=' + encodeURIComponent(title) +
+    '&dates=' + startStr + '/' + endStr +
+    '&cid=' + encodeURIComponent(CAL_ID_GAKUEN);
+  window.open(url, '_blank');
+  document.getElementById('idx-cal-add-form').style.display = 'none';
+}
 </script>
 </body>
 </html>
