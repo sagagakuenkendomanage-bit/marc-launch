@@ -869,6 +869,11 @@ function savePolicy(){
   D.policies.push({title: title, url: '', id: Date.now()});
   renderPolicies(); lsSave(); closeSheet();
 }
+function deletePolicy(i){
+  // ★この関数自体が定義されていなかったため、削除ボタン（✕）を押すと
+  //   ReferenceErrorになり何も起こらなかった（佐賀北版には存在していた）。
+  D.policies.splice(i,1); renderPolicies(); lsSave();
+}
 function renderPolicies(){
   const list=document.getElementById('pl-list');
   const hint=document.querySelector('.pl-hint');
@@ -1050,6 +1055,22 @@ function lsLoad(){
   }catch(e){}
 }
 
+// ===== TOAST（簡易通知） =====
+let _navToastTimer = null;
+function showNavToast(msg) {
+  let t = document.getElementById('nav-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'nav-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:10px 18px;border-radius:999px;font-size:13px;font-weight:500;box-shadow:0 4px 16px rgba(0,0,0,.25);z-index:9000;opacity:0;transition:opacity .25s;white-space:nowrap;max-width:90vw;text-overflow:ellipsis;overflow:hidden;';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg;
+  t.style.opacity = '1';
+  clearTimeout(_navToastTimer);
+  _navToastTimer = setTimeout(function(){ t.style.opacity = '0'; }, 3800);
+}
+
 // ===== GAS =====
 async function saveToGas(key, data){
   if(!GAS_URL) return;
@@ -1063,7 +1084,13 @@ async function saveToGas(key, data){
       headers:{'Content-Type':'text/plain'},
       body:JSON.stringify({school:school, key:key, ...data})
     });
-  }catch(e){ console.warn('GAS送信エラー:', e); }
+  }catch(e){
+    console.warn('GAS送信エラー:', e);
+    // ★以前はここでconsole.warnのみで、画面上は即座に「完了」マークが
+    //   付いたままになっていた（保存が実際に届いたかは未確認のまま）。
+    //   通信エラー時は最低限ユーザーに気づいてもらえるよう通知する。
+    showNavToast('⚠ 通信エラーのため保存できていない可能性があります。Wi-Fiを確認し、後で再度操作してください');
+  }
 }
 function loadFromGas(){
   if(!GAS_URL) return;
