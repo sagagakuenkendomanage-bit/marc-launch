@@ -1209,7 +1209,7 @@ function initCalendar() {
 
 function renderMonthLabel() {
   const el = document.getElementById('cal-month-label');
-  if (el) el.textContent = currentCalYear + '年' + (currentCalMonth + 1) + '月';
+  if (el) el.textContent = currentCalYear + '年' + (currentCalMonth + 1) + '月　佐賀学園剣道部カレンダー';
 }
 
 function changeMonth(delta) {
@@ -1466,7 +1466,7 @@ function printCalendar() {
   });
 
   var html = '<!DOCTYPE html><html lang="ja"><head><meta charset="UTF-8">';
-  html += '<title>' + year + '年' + (month+1) + '月 MARCカレンダー</title>';
+  html += '<title>' + year + '年' + (month+1) + '月　佐賀学園剣道部カレンダー</title>';
   html += '<style>';
   html += '@page{size:A4 landscape;margin:10mm;}';
   html += 'body{font-family:"Noto Sans JP",sans-serif;font-size:11px;color:#333;margin:0;}';
@@ -1481,7 +1481,7 @@ function printCalendar() {
   html += '.today .day-num{color:#fff;}';
   html += '.sun .day-num{color:#c0392b;} .sat .day-num{color:#2471a3;}';
   html += '</style></head><body>';
-  html += '<h1>' + year + '年' + (month+1) + '月 MARCカレンダー</h1>';
+  html += '<h1>' + year + '年' + (month+1) + '月　佐賀学園剣道部カレンダー</h1>';
 
   html += '<table><colgroup><col><col><col><col><col><col><col></colgroup><thead><tr>';
   ['日','月','火','水','木','金','土'].forEach(function(d,i){
@@ -1509,6 +1509,7 @@ function printCalendar() {
 
   var win = window.open('', '_blank', 'width=800,height=1000');
   win.document.write(html);
+  win.document.title = '佐賀学園剣道部カレンダー';
   win.document.close();
   win.onload = function(){ win.print(); };
 }
